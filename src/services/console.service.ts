@@ -1,4 +1,6 @@
 import { Console } from "../models/console.model";
+import {Review} from "../models/review.model";
+import {notFound} from "../error/NotFoundError";
 
 export class ConsoleService {
 
@@ -26,6 +28,7 @@ export class ConsoleService {
     if (console) {
       console.destroy();
     }
+    else notFound("Console");
   }
 
   // Met à jour une console

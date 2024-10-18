@@ -1,9 +1,12 @@
-import {Body, Controller, Get, Patch, Path, Post, Route, Tags} from "tsoa";
+import {Body, Controller, Delete, Get, Patch, Path, Post, Route, Tags} from "tsoa";
 import {CreateGameDTO, GameDTO, UpdateGameDTO} from "../dto/game.dto";
-import { gameService } from "../services/game.service";
+import {GameService, gameService} from "../services/game.service";
 import {notFound} from "../error/NotFoundError";
 import {ConsoleDTO} from "../dto/console.dto";
 import {consoleService} from "../services/console.service";
+import {ReviewService} from "../services/review.service";
+import {ReviewController} from "./review.controller";
+import {ReviewDTO} from "../dto/review.dto";
 
 @Route("games")
 @Tags("Games")
@@ -46,5 +49,21 @@ export class GameController extends Controller {
     } else {
       return updatedConsole;
     }
+  }
+
+  @Delete("{id}")
+  public async deleteGame(@Path() id: number): Promise<void> {
+    const gameReviews = await ReviewService.getGameReviews(id);
+    if (gameReviews.length > 0) {
+      throw new Error("This game still have reviews. Delete them first.");
+    }
+  }
+
+  // Récupère les reviews liés au jeu
+  @Get("{id}/reviews")
+  public async getConsoleGames(
+      @Path() id: number
+  ): Promise<ReviewDTO[]> {
+    return ReviewService.getGameReviews(id);
   }
 }

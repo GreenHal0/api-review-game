@@ -2,6 +2,11 @@ import { Controller, Get, Post, Delete, Route, Path, Body, Tags, Patch } from "t
 import { consoleService } from "../services/console.service";
 import { ConsoleDTO } from "../dto/console.dto";
 import {notFound} from "../error/NotFoundError";
+import {GameService} from "../services/game.service";
+import {ReviewService} from "../services/review.service";
+import {ReviewController} from "./review.controller";
+import {GameController} from "./game.controller";
+import {GameDTO} from "../dto/game.dto";
 
 @Route("consoles")
 @Tags("Consoles")
@@ -32,9 +37,17 @@ export class ConsoleController extends Controller {
     return consoleService.createConsole(name, manufacturer);
   }
 
-  // Supprime une console par ID
+  // Supprime une console par ID si elle n'a pas de review
   @Delete("{id}")
   public async deleteConsole(@Path() id: number): Promise<void> {
+    const consoleGames = await GameService.getConsoleGames(id);
+
+    for (const game of consoleGames) {
+      const gameReviews = await ReviewService.getGameReviews(game.id ? game.id : -1);
+      if (gameReviews.length > 0) {
+        throw new Error("One or more game of this console still have reviews. Delete them first.");
+      }
+    }
     await consoleService.deleteConsole(id);
   }
 
@@ -51,5 +64,13 @@ export class ConsoleController extends Controller {
     } else {
       return updatedConsole;
     }
+  }
+
+  // Récupère les jeux liés à la console
+  @Get("{id}/games")
+  public async getConsoleGames(
+      @Path() id: number
+  ): Promise<GameDTO[]> {
+    return GameService.getConsoleGames(id);
   }
 }

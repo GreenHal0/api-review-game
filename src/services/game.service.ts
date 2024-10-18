@@ -50,6 +50,10 @@ export class GameService {
     await game.save();
     return game;
   }
+
+  static async getConsoleGames(idConsole: number) {
+    return await Game.findAll({ where: { console_id: idConsole } });
+  }
 }
 
 export const gameService = new GameService();
